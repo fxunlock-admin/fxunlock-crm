@@ -8,11 +8,13 @@ const prisma = new PrismaClient();
 // Seed database endpoint (for development/deployment only)
 router.post('/seed', async (req: Request, res: Response) => {
   try {
-    const { secret } = req.body;
+    // Check if already seeded
+    const existingAdmin = await prisma.user.findUnique({
+      where: { email: 'admin@fxunlock.com' }
+    });
     
-    // Simple secret check
-    if (secret !== process.env.SEED_SECRET || !process.env.SEED_SECRET) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    if (existingAdmin) {
+      return res.json({ message: 'Database already seeded' });
     }
 
     console.log('🌱 Starting database seed...');
