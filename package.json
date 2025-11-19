@@ -4,20 +4,16 @@
   "private": true,
   "description": "Reverse-auction marketplace for FX affiliates and brokers",
   "scripts": {
-    "dev": "pnpm --parallel -r dev",
-    "build": "pnpm -r build",
-    "test": "pnpm -r test",
-    "lint": "pnpm -r lint",
-    "db:migrate": "pnpm --filter backend db:migrate",
-    "db:seed": "pnpm --filter backend db:seed",
+    "dev": "npm --parallel -r dev",
+    "build": "npm -r build",
+    "test": "npm -r test",
+    "lint": "npm -r lint",
+    "db:migrate": "npm --filter backend db:migrate",
+    "db:seed": "npm --filter backend db:seed",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down"
   },
-  "workspaces": [
-    "packages/*"
-  ],
   "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
+    "node": ">=18.0.0"
   }
 }
