@@ -1,0 +1,16 @@
+[build]
+  command = "cd packages/backend/src/websocket/CascadeProjects/windsurf-project-2/frontend && npm run build"
+  publish = "packages/backend/src/websocket/CascadeProjects/windsurf-project-2/frontend/dist"
+
+[functions]
+  directory = "packages/backend/src/websocket/CascadeProjects/windsurf-project-2/backend"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
