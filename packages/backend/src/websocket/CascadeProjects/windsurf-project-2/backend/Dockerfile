@@ -1,13 +1,13 @@
 # Build stage
-FROM node:22-alpine AS builder
+FROM node:22-slim AS builder
 
 WORKDIR /build
 
 # Copy only package files
 COPY package*.json ./
 
-# Install dependencies with npm explicitly
-RUN npm install --no-save
+# Install dependencies
+RUN npm ci
 
 # Copy source and prisma
 COPY src ./src
@@ -15,25 +15,21 @@ COPY tsconfig.json ./
 COPY prisma ./prisma
 
 # Generate Prisma client and build
-RUN npx prisma generate && npx tsc
+RUN npm run prisma:generate && npm run build
 
 # Production stage
-FROM node:22-alpine
+FROM node:22-slim
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies, skip scripts
-RUN npm install --omit=dev --no-save --ignore-scripts
+# Install only production dependencies
+RUN npm ci --omit=dev
 
-# Copy entire node_modules from builder (already has all dependencies)
-COPY --from=builder /build/node_modules ./node_modules
-
-# Copy prisma schema and generated client from builder
+# Copy prisma schema
 COPY prisma ./prisma
-COPY --from=builder /build/node_modules/.prisma ./node_modules/.prisma
 
 # Copy built application from builder
 COPY --from=builder /build/dist ./dist
