@@ -1,7 +1,6 @@
 [build]
-  base = "packages/backend/src/websocket/CascadeProjects/windsurf-project-2/frontend"
-  command = "npm run build"
-  publish = "dist"
+  command = "cd packages/backend/src/websocket/CascadeProjects/windsurf-project-2/frontend && npm run build"
+  publish = "packages/backend/src/websocket/CascadeProjects/windsurf-project-2/frontend/dist"
 
 [[redirects]]
   from = "/*"
