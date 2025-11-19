@@ -28,8 +28,9 @@ COPY package*.json ./
 # Install only production dependencies
 RUN npm install --omit=dev --no-save
 
-# Copy prisma schema (needed at runtime)
+# Copy prisma schema and generated client from builder
 COPY prisma ./prisma
+COPY --from=builder /build/node_modules/.prisma ./node_modules/.prisma
 
 # Copy built application from builder
 COPY --from=builder /build/dist ./dist
