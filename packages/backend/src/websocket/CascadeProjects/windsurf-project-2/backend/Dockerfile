@@ -3,9 +3,6 @@ FROM node:22-alpine AS builder
 
 WORKDIR /build
 
-# Ensure npm is used, not pnpm
-RUN npm config set package-manager npm
-
 # Copy only package files
 COPY package*.json ./
 
