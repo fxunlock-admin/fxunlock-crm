@@ -13,13 +13,9 @@ RUN npm install --no-save
 COPY src ./src
 COPY tsconfig.json ./
 COPY prisma ./prisma
-COPY build.sh ./
 
-# Make build script executable
-RUN chmod +x build.sh
-
-# Run build script
-RUN ./build.sh
+# Generate Prisma client and build
+RUN npx prisma generate && npx tsc
 
 # Production stage
 FROM node:22-alpine
