@@ -3,13 +3,22 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const router = Router();
-const prisma = new PrismaClient();
+let prisma: PrismaClient | null = null;
+
+function getPrisma() {
+  if (!prisma) {
+    prisma = new PrismaClient();
+  }
+  return prisma;
+}
 
 // Seed database endpoint (for development/deployment only)
 router.post('/seed', async (req: Request, res: Response) => {
   try {
+    const db = getPrisma();
+    
     // Check if already seeded
-    const existingAdmin = await prisma.user.findUnique({
+    const existingAdmin = await db.user.findUnique({
       where: { email: 'admin@fxunlock.com' }
     });
     
@@ -21,7 +30,7 @@ router.post('/seed', async (req: Request, res: Response) => {
 
     // Create admin user
     const adminPassword = await bcrypt.hash('Admin123!', 10);
-    const admin = await prisma.user.upsert({
+    const admin = await db.user.upsert({
       where: { email: 'admin@fxunlock.com' },
       update: {},
       create: {
@@ -37,7 +46,7 @@ router.post('/seed', async (req: Request, res: Response) => {
 
     // Create staff user
     const staffPassword = await bcrypt.hash('Staff123!', 10);
-    const staff = await prisma.user.upsert({
+    const staff = await db.user.upsert({
       where: { email: 'staff@fxunlock.com' },
       update: {},
       create: {
@@ -52,7 +61,7 @@ router.post('/seed', async (req: Request, res: Response) => {
     console.log('✅ Created staff user:', staff.email);
 
     // Create sample brokers
-    const broker1 = await prisma.broker.upsert({
+    const broker1 = await db.broker.upsert({
       where: { id: 'broker-1' },
       update: {},
       create: {
@@ -70,7 +79,7 @@ router.post('/seed', async (req: Request, res: Response) => {
     });
     console.log('✅ Created broker:', broker1.name);
 
-    const broker2 = await prisma.broker.upsert({
+    const broker2 = await db.broker.upsert({
       where: { id: 'broker-2' },
       update: {},
       create: {
