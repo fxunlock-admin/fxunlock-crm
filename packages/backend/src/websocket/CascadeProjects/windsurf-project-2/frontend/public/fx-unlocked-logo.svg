@@ -1,0 +1,26 @@
+<svg width="1000" height="200" viewBox="0 0 1000 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="leftGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00BCD4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2196F3;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="rightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5C6BC0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9C27B0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Simplified geometric logo shape -->
+  <g transform="translate(30, 20)">
+    <!-- Left cyan/blue shape -->
+    <path d="M 0 80 L 40 20 L 80 60 L 40 100 Z" fill="url(#leftGrad)"/>
+    <!-- Center hexagon -->
+    <path d="M 60 60 L 100 40 L 140 60 L 140 120 L 100 140 L 60 120 Z" fill="url(#rightGrad)"/>
+    <path d="M 80 70 L 100 60 L 120 70 L 120 110 L 100 120 L 80 110 Z" fill="white"/>
+    <!-- Right purple shape -->
+    <path d="M 140 90 L 180 50 L 220 90 L 180 130 Z" fill="url(#rightGrad)"/>
+  </g>
+  
+  <!-- FXUnlocked text -->
+  <text x="280" y="130" font-family="Arial, sans-serif" font-size="90" font-weight="bold" fill="#1a1a1a">FXUnlocked</text>
+</svg>

@@ -1,0 +1,35 @@
+'use client'
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
+import { useAuthStore } from '@/store/auth'
+import { ThemeProvider } from '@/contexts/ThemeContext'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+})
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+  const loadUser = useAuthStore((state) => state.loadUser)
+
+  useEffect(() => {
+    setMounted(true)
+    loadUser()
+  }, [loadUser])
+
+  if (!mounted) {
+    return null
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>{children}</ThemeProvider>
+    </QueryClientProvider>
+  )
+}

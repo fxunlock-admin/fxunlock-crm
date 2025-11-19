@@ -1,0 +1,251 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Enums replaced with String for SQLite compatibility
+// UserRole: ADMIN, STAFF, VIEWER
+// AffiliateStatus: ACTIVE, PAUSED, TERMINATED
+// DealType: CPA, IB, PNL
+// CommissionStatus: PENDING, PAID
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  role      String   @default("STAFF")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Staff Profile Fields
+  startDate       DateTime?
+  contractFile    String?   // URL or path to contract
+  salary          Float?    // Monthly salary
+  salaryCurrency  String?   // GBP, USD, EUR, AED
+  annualKpis      String?   // JSON string for annual KPIs
+  quarterlyKpis   String?   // JSON string for quarterly KPIs
+  monthlyKpis     String?   // JSON string for monthly KPIs by year
+
+  // Relations
+  managedAffiliates Affiliate[]
+  auditLogs         AuditLog[]
+  affiliateNotes    AffiliateNote[]
+  appointments      Appointment[]
+  commissions       Commission[]
+  staffKpis         StaffKpi[]
+
+  @@map("users")
+}
+
+model StaffKpi {
+  id              String   @id @default(uuid())
+  year            Int
+  quarter         Int?     // 1-4 for quarterly, null for annual
+  month           Int?     // 1-12 for monthly tracking
+  targetRevenue   Float
+  actualRevenue   Float    @default(0)
+  targetAffiliates Int
+  actualAffiliates Int    @default(0)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Foreign Keys
+  staffMemberId   String
+  staffMember     User     @relation(fields: [staffMemberId], references: [id], onDelete: Cascade)
+
+  @@index([staffMemberId])
+  @@index([year, quarter])
+  @@map("staff_kpis")
+}
+
+model CompanyKpi {
+  id              String   @id @default(uuid())
+  year            Int
+  month           Int      // 1-12
+  quarter         Int?     // Calculated: 1-4 (auto-calculated from month)
+  targetRevenue   Float
+  actualRevenue   Float    @default(0)
+  targetAffiliates Int
+  actualAffiliates Int    @default(0)
+  targetCommissions Int
+  actualCommissions Int   @default(0)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([year, month])
+  @@index([year, month])
+  @@index([year, quarter])
+  @@map("company_kpis")
+}
+
+model Broker {
+  id              String    @id @default(uuid())
+  name            String
+  accountManager  String?
+  contactEmail    String?
+  contactPhone    String?
+  agreementDate   DateTime?
+  renewalDate     DateTime?
+  dealTypes       String?   // Comma-separated: "CPA,REBATES,HYBRID,PNL"
+  masterDealTerms String?
+  notes           String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  affiliates  Affiliate[]
+  commissions Commission[]
+
+  @@map("brokers")
+}
+
+model Affiliate {
+  id            String          @id @default(uuid())
+  name          String
+  email         String          @unique
+  phone         String?
+  address       String?
+  region        String?
+  country       String?
+  trafficRegion String? // Asia, Europe, North America, South America, Africa, Oceania
+  trafficTypes  String? // Comma-separated traffic types
+  dealType      String
+  dealTerms     String?
+  dealDetails   String? // JSON string for deal-specific fields
+  status        String   @default("ACTIVE")
+  startDate     DateTime        @default(now())
+  renewalDate   DateTime?
+  source        String? // Who introduced this affiliate to us
+  website       String? // Social: Website URL
+  instagram     String? // Social: Instagram handle
+  telegram      String? // Social: Telegram handle
+  x             String? // Social: X (Twitter) handle
+  notes         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  // Foreign Keys
+  brokerId      String
+  managerId     String
+
+  // Relations
+  broker        Broker          @relation(fields: [brokerId], references: [id], onDelete: Restrict)
+  manager       User            @relation(fields: [managerId], references: [id], onDelete: Restrict)
+  commissions   Commission[]
+  affiliateNotes AffiliateNote[]
+  appointments  Appointment[]
+
+  @@index([brokerId])
+  @@index([managerId])
+  @@index([status])
+  @@map("affiliates")
+}
+
+model Commission {
+  id            String           @id @default(uuid())
+  month         Int // 1-12
+  year          Int
+  dealType      String
+  revenueAmount Float
+  status        String   @default("PENDING")
+  paidDate      DateTime?
+  notes         String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  // Foreign Keys
+  affiliateId   String
+  brokerId      String
+  staffMemberId String?
+
+  // Relations
+  affiliate     Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  broker        Broker    @relation(fields: [brokerId], references: [id], onDelete: Restrict)
+  staffMember   User?     @relation(fields: [staffMemberId], references: [id], onDelete: SetNull)
+
+  @@index([affiliateId])
+  @@index([brokerId])
+  @@index([staffMemberId])
+  @@index([year, month])
+  @@index([status])
+  @@map("commissions")
+}
+
+model AffiliateNote {
+  id          String   @id @default(uuid())
+  content     String
+  noteType    String?  // CALL, MEETING, EMAIL, GENERAL
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Foreign Keys
+  affiliateId String
+  userId      String
+
+  // Relations
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("affiliate_notes")
+}
+
+model Appointment {
+  id            String   @id @default(uuid())
+  title         String
+  appointmentType String // MEETING, CALL, FOLLOW_UP
+  scheduledAt   DateTime
+  notes         String?
+  status        String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Foreign Keys
+  affiliateId   String
+  userId        String
+
+  // Relations
+  affiliate     Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateId])
+  @@index([userId])
+  @@index([scheduledAt])
+  @@index([status])
+  @@map("appointments")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String
+  action      String // CREATE, UPDATE, DELETE
+  entityType  String // AFFILIATE, BROKER, COMMISSION, USER
+  entityId    String
+  changes     String? // JSON string of changes
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
