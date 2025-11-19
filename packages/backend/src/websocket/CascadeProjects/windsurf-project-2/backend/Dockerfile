@@ -25,8 +25,11 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm install --omit=dev --no-save
+# Install only production dependencies, skip scripts
+RUN npm install --omit=dev --no-save --ignore-scripts
+
+# Copy entire node_modules from builder (already has all dependencies)
+COPY --from=builder /build/node_modules ./node_modules
 
 # Copy prisma schema and generated client from builder
 COPY prisma ./prisma
