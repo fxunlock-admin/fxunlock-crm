@@ -22,4 +22,4 @@ EXPOSE 8002
 ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # Push schema to database and run migrations on startup
-CMD ["sh", "-c", "npx prisma db push --skip-generate && node dist/index.js"]
+CMD ["sh", "-c", "npx prisma db push --skip-generate --accept-data-loss 2>&1 || true && node dist/index.js"]
