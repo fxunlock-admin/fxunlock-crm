@@ -21,4 +21,5 @@ EXPOSE 8002
 # Ensure pnpm is not in PATH
 ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-CMD ["node", "dist/index.js"]
+# Run migrations on startup
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
