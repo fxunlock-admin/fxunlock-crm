@@ -12,6 +12,7 @@ import dashboardRoutes from './routes/dashboardRoutes';
 import userRoutes from './routes/userRoutes';
 import exchangeRateRoutes from './routes/exchangeRateRoutes';
 import companyKpiRoutes from './routes/companyKpiRoutes';
+import seedRoutes from './routes/seedRoutes';
 import { errorHandler, notFound } from './middleware/errorHandler';
 
 // Load environment variables
@@ -48,6 +49,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/exchange', exchangeRateRoutes);
 app.use('/api/company-kpis', companyKpiRoutes);
+app.use('/api/seed', seedRoutes);
 
 // Error handling
 app.use(notFound);
