@@ -3,6 +3,11 @@ import { verifyToken, JwtPayload } from '../utils/jwt';
 
 export interface AuthRequest extends Request {
   user?: JwtPayload;
+  query?: any;
+  params?: any;
+  body?: any;
+  headers?: any;
+  ip?: any;
 }
 
 export const authenticate = (
