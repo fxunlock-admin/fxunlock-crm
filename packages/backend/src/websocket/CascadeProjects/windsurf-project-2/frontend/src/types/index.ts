@@ -1,5 +1,5 @@
 export type UserRole = 'ADMIN' | 'STAFF' | 'VIEWER';
-export type AffiliateStatus = 'ACTIVE' | 'PAUSED' | 'TERMINATED';
+export type AffiliateStatus = 'ACTIVE' | 'ONBOARDING' | 'LEAD' | 'INACTIVE';
 export type DealType = 'CPA' | 'PNL' | 'HYBRID' | 'REBATES';
 export type CommissionStatus = 'PENDING' | 'PAID';
 export type NoteType = 'CALL' | 'MEETING' | 'EMAIL' | 'GENERAL';
@@ -42,6 +42,7 @@ export type DealDetails = CPADealDetails | RebatesDealDetails | HybridDealDetail
 
 export interface User {
   id: string;
+  userId?: string;
   email: string;
   firstName: string;
   lastName: string;
@@ -198,6 +199,19 @@ export interface AffiliateNote {
     lastName: string;
     email: string;
   };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompanyKpi {
+  id: string;
+  year: number;
+  month: number;
+  quarter?: number;
+  targetRevenue: number;
+  targetNewAffiliates: number;
+  actualRevenue?: number;
+  actualNewAffiliates?: number;
   createdAt: string;
   updatedAt: string;
 }
