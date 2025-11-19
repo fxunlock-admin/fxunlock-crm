@@ -16,13 +16,87 @@ router.post('/seed', async (req: Request, res: Response) => {
   try {
     console.log('🌱 Starting database seed...');
 
-    // Create all tables using Prisma's db push
+    // Create all tables using raw SQL
     try {
-      console.log('Syncing database schema...');
-      // This will create all tables defined in schema.prisma
-      await prisma.$executeRawUnsafe('SELECT 1');
+      console.log('Creating database tables...');
+      
+      // Create brokers table
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "brokers" (
+          "id" TEXT NOT NULL PRIMARY KEY,
+          "name" TEXT NOT NULL,
+          "accountManager" TEXT,
+          "contactEmail" TEXT,
+          "contactPhone" TEXT,
+          "agreementDate" TIMESTAMP,
+          "renewalDate" TIMESTAMP,
+          "dealTypes" TEXT,
+          "masterDealTerms" TEXT,
+          "notes" TEXT,
+          "isActive" BOOLEAN NOT NULL DEFAULT true,
+          "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      
+      // Create affiliates table
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "affiliates" (
+          "id" TEXT NOT NULL PRIMARY KEY,
+          "name" TEXT NOT NULL,
+          "email" TEXT NOT NULL UNIQUE,
+          "phone" TEXT,
+          "address" TEXT,
+          "region" TEXT,
+          "country" TEXT,
+          "trafficRegion" TEXT,
+          "trafficTypes" TEXT,
+          "dealType" TEXT NOT NULL,
+          "dealTerms" TEXT,
+          "dealDetails" TEXT,
+          "status" TEXT NOT NULL DEFAULT 'ACTIVE',
+          "startDate" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "renewalDate" TIMESTAMP,
+          "source" TEXT,
+          "website" TEXT,
+          "instagram" TEXT,
+          "telegram" TEXT,
+          "x" TEXT,
+          "notes" TEXT,
+          "brokerId" TEXT NOT NULL,
+          "managerId" TEXT NOT NULL,
+          "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY ("brokerId") REFERENCES "brokers"("id"),
+          FOREIGN KEY ("managerId") REFERENCES "users"("id")
+        )
+      `);
+      
+      // Create commissions table
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "commissions" (
+          "id" TEXT NOT NULL PRIMARY KEY,
+          "month" INTEGER NOT NULL,
+          "year" INTEGER NOT NULL,
+          "dealType" TEXT NOT NULL,
+          "revenueAmount" DOUBLE PRECISION NOT NULL,
+          "status" TEXT NOT NULL DEFAULT 'PENDING',
+          "paidDate" TIMESTAMP,
+          "notes" TEXT,
+          "affiliateId" TEXT NOT NULL,
+          "brokerId" TEXT NOT NULL,
+          "staffMemberId" TEXT,
+          "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY ("affiliateId") REFERENCES "affiliates"("id"),
+          FOREIGN KEY ("brokerId") REFERENCES "brokers"("id"),
+          FOREIGN KEY ("staffMemberId") REFERENCES "users"("id")
+        )
+      `);
+      
+      console.log('✅ All tables created/verified');
     } catch (e) {
-      console.log('Schema sync note:', e);
+      console.log('Table creation note:', e);
     }
 
     // Create admin user
