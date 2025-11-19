@@ -1,5 +1,5 @@
 [build]
-  command = "cd packages/backend/src/websocket/CascadeProjects/windsurf-project-2/frontend && npm run build"
+  command = "cd packages/backend/src/websocket/CascadeProjects/windsurf-project-2/frontend && npm ci && npm run build"
   publish = "packages/backend/src/websocket/CascadeProjects/windsurf-project-2/frontend/dist"
 
 [[redirects]]
