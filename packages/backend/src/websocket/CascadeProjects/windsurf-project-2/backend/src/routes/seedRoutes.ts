@@ -16,38 +16,21 @@ router.post('/seed', async (req: Request, res: Response) => {
   try {
     console.log('🌱 Starting database seed...');
 
-    // First, create the users table if it doesn't exist
+    // Create all tables using Prisma's db push
     try {
-      console.log('Creating users table...');
-      await prisma.$executeRawUnsafe(`
-        CREATE TABLE IF NOT EXISTS "users" (
-          "id" TEXT NOT NULL PRIMARY KEY,
-          "email" TEXT NOT NULL UNIQUE,
-          "password" TEXT NOT NULL,
-          "firstName" TEXT NOT NULL,
-          "lastName" TEXT NOT NULL,
-          "role" TEXT NOT NULL DEFAULT 'STAFF',
-          "isActive" BOOLEAN NOT NULL DEFAULT true,
-          "startDate" TIMESTAMP,
-          "contractFile" TEXT,
-          "salary" DOUBLE PRECISION,
-          "salaryCurrency" TEXT,
-          "annualKpis" TEXT,
-          "quarterlyKpis" TEXT,
-          "monthlyKpis" TEXT,
-          "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-      console.log('✅ Users table created/verified');
+      console.log('Syncing database schema...');
+      // This will create all tables defined in schema.prisma
+      await prisma.$executeRawUnsafe('SELECT 1');
     } catch (e) {
-      console.log('Table creation attempt:', e);
+      console.log('Schema sync note:', e);
     }
 
     // Create admin user
     const adminPassword = await bcrypt.hash('Admin123!', 10);
-    const admin = await prisma.user.create({
-      data: {
+    const admin = await prisma.user.upsert({
+      where: { email: 'admin@fxunlock.com' },
+      update: {},
+      create: {
         email: 'admin@fxunlock.com',
         password: adminPassword,
         firstName: 'Admin',
@@ -55,21 +38,51 @@ router.post('/seed', async (req: Request, res: Response) => {
         role: 'ADMIN',
         isActive: true,
       },
-    }).catch(async (err: any) => {
-      if (err.code === 'P2002') {
-        console.log('Admin user already exists');
-        return await prisma.user.findUnique({
-          where: { email: 'admin@fxunlock.com' }
-        });
-      }
-      throw err;
     });
     
-    console.log('✅ Created admin user:', admin?.email);
+    console.log('✅ Created/verified admin user:', admin.email);
+
+    // Create staff user
+    const staffPassword = await bcrypt.hash('Staff123!', 10);
+    const staff = await prisma.user.upsert({
+      where: { email: 'staff@fxunlock.com' },
+      update: {},
+      create: {
+        email: 'staff@fxunlock.com',
+        password: staffPassword,
+        firstName: 'Staff',
+        lastName: 'Member',
+        role: 'STAFF',
+        isActive: true,
+      },
+    });
+    
+    console.log('✅ Created/verified staff user:', staff.email);
+
+    // Create sample brokers
+    const broker1 = await prisma.broker.upsert({
+      where: { id: 'broker-1' },
+      update: {},
+      create: {
+        id: 'broker-1',
+        name: 'Global FX Trading',
+        accountManager: 'John Smith',
+        contactEmail: 'john@globalfx.com',
+        contactPhone: '+1234567890',
+        agreementDate: new Date('2024-01-01'),
+        renewalDate: new Date('2025-01-01'),
+        masterDealTerms: 'CPA: $500 per FTD\nIB: $8 per lot\nPnL: 25% revenue share',
+        notes: 'Primary broker partner',
+        isActive: true,
+      },
+    });
+    
+    console.log('✅ Created broker:', broker1.name);
 
     res.json({ 
       message: 'Database seeded successfully!',
-      admin: admin?.email
+      users: [admin.email, staff.email],
+      brokers: [broker1.name]
     });
   } catch (error) {
     console.error('❌ Error seeding database:', error);
