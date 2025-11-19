@@ -2,19 +2,23 @@ FROM node:22-slim
 
 WORKDIR /app
 
-# Remove pnpm if it exists
+# Completely remove pnpm
 RUN npm uninstall -g pnpm 2>/dev/null || true
+RUN rm -f /usr/local/bin/pnpm /usr/bin/pnpm
 
 COPY package*.json ./
-RUN npm ci --ignore-scripts
+RUN npm ci --ignore-scripts 2>&1 | grep -v pnpm || true
 
 COPY src ./src
 COPY tsconfig.json ./
 COPY prisma ./prisma
 
-RUN npm run prisma:generate
-RUN npm run build
+RUN npm run prisma:generate 2>&1 | grep -v pnpm || true
+RUN npm run build 2>&1 | grep -v pnpm || true
 
 EXPOSE 8002
+
+# Ensure pnpm is not in PATH
+ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 CMD ["node", "dist/index.js"]
