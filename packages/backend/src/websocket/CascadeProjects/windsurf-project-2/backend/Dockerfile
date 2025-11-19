@@ -9,15 +9,18 @@ ENV npm_config_package_manager=npm
 COPY package*.json ./
 COPY prisma ./prisma
 
-# Install dependencies with npm
-RUN npm install --omit=dev
+# Install all dependencies (including devDependencies for build)
+RUN npm ci
 
 # Copy source code
 COPY src ./src
 COPY tsconfig.json ./
 
 # Build TypeScript
-RUN npx tsc
+RUN npm run build
+
+# Remove devDependencies
+RUN npm prune --omit=dev
 
 # Expose port
 EXPOSE 8002
