@@ -18,7 +18,11 @@
     "noUnusedParameters": false,
     "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": false,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "suppressImplicitAnyIndexErrors": false,
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
